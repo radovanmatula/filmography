@@ -30,12 +30,16 @@ class Watchlist:
         except:
             self._watchlist_dictionary = {}
             
-            
+        
+
     def _add_film(self, name):
 
         new_film = Film(name)
         self._watchlist_dictionary[new_film.name] = new_film.__dict__
-    
+   
+        # Add Status: Watched/Unwatched
+        self._watchlist_dictionary[new_film.name]['status'] = 'NW'
+
     def add_to_watchlist(self, names):
 
         films_already_in_watchlist = list(self._watchlist_dictionary.keys())
@@ -57,6 +61,10 @@ class Watchlist:
         with open(self._dictionary_path, 'wb') as d:
             pickle.dump(self._watchlist_dictionary, d, protocol=pickle.HIGHEST_PROTOCOL)
         
+
+    # updating method which would update all the films already in the dict with the newly implemented changes 
+
+    # method to set the film as `watched` W
 
     def random_film_suggestion(self, t_min=0, t_max=None, multiple=False, number_of_suggestions=3):
       
@@ -111,7 +119,17 @@ class Watchlist:
         #return resorted_watchlist
         self._watchlist_dictionary = resorted_watchlist
 
-    #temp function to create a primitive 'UI'
+    #(temp) print all the films in the dict as a list to be used as input after implemented changes
+    def print_watchlist(self):
+    
+        watch_list = []
+        for key in self._watchlist_dictionary.keys():
+            watch_list.append(key)
+
+        return watch_list
+
+    #(temp) function to create a primitive 'UI'
+    #add option to view only a subset of the watchlist given by single number N; as in view films from <1,N>
     def view_watchlist(self):
         
         for key in self._watchlist_dictionary.keys():
@@ -119,4 +137,5 @@ class Watchlist:
             print(f"directed by: {self._watchlist_dictionary[key]['director']}")
             print(f"released: {self._watchlist_dictionary[key]['year_of_release']}")
             print(f"runtime: {self._watchlist_dictionary[key]['runtime']}")
+            print(f"status: {self._watchlist_dictionary[key]['status']}")
             print('\n')
