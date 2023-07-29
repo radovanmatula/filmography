@@ -12,7 +12,6 @@ from kivy.uix.button import Button
 ###
 from kivy.config import Config
   
-# Configuration
 Config.set('graphics', 'width', '350')
 Config.set('graphics', 'height', '130')
 Config.write()
@@ -31,23 +30,24 @@ class WatchlistEntry(GridLayout):
         self.SMWatchlist = Watchlist()
         
 
-        #
+        #the whole window is defaultly just one column so we can vary the number of columns on different rows
         self.cols = 1
-        self.add_widget(Label(text='Welcome to FilmoGraphy'))
+        self.add_widget(Label(text='Welcome to SparkleMotion'))
 
         self.inner = GridLayout(cols=2) # the app layout will be split into two columns
         self.add_widget(self.inner)
-        #self.add_widget(Label(text='New Film')) # each thing on the screen needs to be added separatelly with this `add_widget` method
-        #self.entry = TextInput(multiline=False)
-        #self.add_widget(self.entry) # this way we create a text input space
         
-        self.knew_film = TextInput(multiline=False)
+        self.knew_film = TextInput(multiline=True)
         self.inner.add_widget(self.knew_film)
 
         self.add_button = Button(text='Add Film')
         self.add_button.bind(on_press=self.kadd_to_watchlist)
         self.inner.add_widget(self.add_button)
-        
+
+        self.random_button = Button(text='Random Pick')
+        self.random_button.bind(on_press=self.krandom_film_suggestion)
+        self.add_widget(self.random_button)
+
         self.view_button = Button(text='View Watchlist')
         self.view_button.bind(on_press=self.kview_watchlist)
         self.add_widget(self.view_button)
@@ -57,12 +57,19 @@ class WatchlistEntry(GridLayout):
     def kadd_to_watchlist(self, instance):
 
         new_film = self.knew_film.text
-        self.FGWatchlist.add_to_watchlist(new_film)
+        self.SMWatchlist.add_to_watchlist(new_film)
 
+    def krandom_film_suggestion(self, instance):
+        
+        random_pick = self.SMWatchlist.random_film_suggestion()
+        print(random_pick)
+
+    # Temp function
     def kview_watchlist(self, instance):
 
         self.SMWatchlist.view_watchlist()
-
+    
+    
 
 class SparkleMotion(App):
 
