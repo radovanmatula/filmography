@@ -56,6 +56,15 @@ class Watchlist:
 
         with open(self._dictionary_path, 'wb') as d:
             pickle.dump(self._watchlist_dictionary, d, protocol=pickle.HIGHEST_PROTOCOL)
+     
+        print(f'{names} added to your watchlist')   
+     
+    def remove_from_watchlist(self, name):
+        
+        self._watchlist_dictionary.pop(name)
+        
+        with open(self._dictionary_path, 'wb') as d:
+            pickle.dump(self._watchlist_dictionary, d, protocol=pickle.HIGHEST_PROTOCOL)
         
 
     def random_film_suggestion(self, t_min=0, t_max=None, multiple=False, number_of_suggestions=3):
@@ -120,3 +129,7 @@ class Watchlist:
             print(f"released: {self._watchlist_dictionary[key]['year_of_release']}")
             print(f"runtime: {self._watchlist_dictionary[key]['runtime']}")
             print('\n')
+
+ 
+        
+        

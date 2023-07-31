@@ -1,6 +1,6 @@
-import os
-import numpy as np
-import pickle
+#import os
+#import numpy as np
+#import pickle
 
 from urllib.request import urlopen
 import re
@@ -31,6 +31,7 @@ class Film:
 
         self.runtime = self._get_runtime()
         self.director = self._get_director()
+        self._film_wiki_table = None
     
     def _get_year_of_release(self):
 
@@ -68,13 +69,47 @@ class Film:
             else:
                 wiki_url += n
 
-        film_url = wiki_url
+        film_urls = [wiki_url]
+        # create the other two options
+        opt_url_1 = wiki_url + '_(film)'
+        opt_url_2 = wiki_url + f'_({self.year_of_release}_film)'
+        film_urls.append(opt_url_1)
+        film_urls.append(opt_url_2)
         
+        for film_url in film_urls:
+            web_page = urlopen(film_url)
+            html_bytes = web_page.read()
+            html = html_bytes.decode('utf-8')
+            if 'film' in html:
+                #if self._film_wiki_table is not None:
+                #    table = self._film_wiki_table
+                #else:
+                table = html.split('TemplateStyles:r1066479718')[-1].split('</table>')[0] #reads from the side table on wiki
+                
+                if string in table:
+                    result = table.split(string)[-1]
+                    self._film_url = film_url
+                    self._film_wiki_table = table
+                    break
+                else:
+                    continue
+                
+        return result
+
+        '''
+        list of the three options of URL
+        cycle through them until you find the sought for `string`
+        save `table` so we don't have to go through all of this again with each call of this method 
+        '''
+        
+        
+        """
         page = urlopen(film_url)
         html_bytes = page.read()
         html = html_bytes.decode("utf-8")
         if string in html:
-            result = html.split(string)[-1].split('</table>')[0] #reads from the side table on wiki
+            table = html.split('TemplateStyles:r1066479718')[-1].split('</table>')[0] #reads from the side table on wiki
+            result = table.split(string)[-1]
         else:
             film_url = wiki_url + '_(film)'
             page = urlopen(film_url)
@@ -95,7 +130,7 @@ class Film:
 
         self._film_url = film_url
         return result
-
+        """
         #https://www.w3schools.com/tags/ref_urlencode.ASP
         #SOMETIMES (!!!) special character are URL encoded
         #https://www.imdb.com/list/ls098136839/
