@@ -3,6 +3,7 @@ import numpy as np
 import pickle
 
 import random
+from datetime import datetime
 
 ###
 
@@ -18,7 +19,7 @@ class Watchlist:
             self._base_directory = base_directory
         else:
             self._base_directory = os.getcwd()
-            
+        
         if dictionary_path is not None:
             self._dictionary_path = dictionary_path
         else:
@@ -35,7 +36,10 @@ class Watchlist:
 
         new_film = Film(name)
         self._watchlist_dictionary[new_film.name] = new_film.__dict__
-    
+        self._watchlist_dictionary[new_film.name]['rating'] = 'NR'
+        self._watchlist_dictionary[new_film.name]['watch_status'] = 'N'
+        self._watchlist_dictionary[new_film.name]['date_added'] = datetime.today().strftime('%Y-%m-%d')
+
     def add_to_watchlist(self, names):
 
         films_already_in_watchlist = list(self._watchlist_dictionary.keys())
@@ -59,6 +63,13 @@ class Watchlist:
      
         print(f'{names} added to your watchlist')   
      
+    def watched_film(self, name):
+
+        self._watchlist_dictionary[name]['watch_status'] = 'W'
+
+        with open(self._dictionary_path, 'wb') as d:
+            pickle.dump(self._watchlist_dictionary, d, protocol=pickle.HIGHEST_PROTOCOL)
+
     def remove_from_watchlist(self, name):
         
         self._watchlist_dictionary.pop(name)
@@ -123,13 +134,21 @@ class Watchlist:
     #temp function to create a primitive 'UI'
     def view_watchlist(self):
         
-        for key in self._watchlist_dictionary.keys():
-            print(f'{key}:   ')
-            print(f"directed by: {self._watchlist_dictionary[key]['director']}")
-            print(f"released: {self._watchlist_dictionary[key]['year_of_release']}")
-            print(f"runtime: {self._watchlist_dictionary[key]['runtime']}")
+        for key, value in self._watchlist_dictionary.items():
+            print(f'{key}: {value}')
             print('\n')
 
- 
+
+
+    # in case I need to delete the `.pkl` file print list of entries it contains 
         
-        
+    def reinit_watchlist(self):
+
+        watch_list = [key for key in self._watchlist_dictionary.keys()]
+        self._watchlist_dictionary = {}
+        os.remove(self._dictionary_path)
+
+        self.add_to_watchlist(watch_list)
+
+        with open(self._dictionary_path, 'wb') as d:
+            pickle.dump(self._watchlist_dictionary, d, protocol=pickle.HIGHEST_PROTOCOL)

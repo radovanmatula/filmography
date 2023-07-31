@@ -31,106 +31,103 @@ class Film:
 
         self.runtime = self._get_runtime()
         self.director = self._get_director()
-        self._film_wiki_table = None
     
     def _get_year_of_release(self):
 
-        web_search = self.search_the_web(string='Release dates')
-        year_of_release = web_search.split('<span class="bday dtstart published updated">')[1].split('-')[0]
+        web_search = self.search_the_web(string='Release Date (Theaters):')
+        year_of_release = web_search.split(', ')[-1].split('</time>')[0] 
 
-        return int(year_of_release)
+        return int(year_of_release) #int
 
     def _get_runtime(self):
         
-        web_search = self.search_the_web(string='Running time')
-        runtime = int(web_search.split(' minutes')[0].split('>')[-1])
-        
-        return runtime
+        web_search = self.search_the_web(string='Runtime:')
+        t = web_search.split('datetime=')[-1].split('>')[0].strip('""')
+        h = t.split('P')[1].strip()[0]
+        m = t.split('h ')[1].split('mM')[0]
+        runtime = 60*int(h) + int(m) #in minutes
+
+        return runtime #int
 
     def _get_director(self):
         
-        web_search = self.search_the_web(string='Directed by')
-        director = web_search.split('title=')[1].split('>')[0].strip('""')
-    
+        web_search = self.search_the_web(string='Director:')
+        director = web_search.split('"movie-info-director">')[-1].split('</a>')[0]
+        # add option of several directors
+
         return director
 
 ###
 
-    #cached property?
-    def search_the_web(self, string):
+    def search_the_web(self, string, page='rotten'):
 
-        wiki_url = 'https://en.wikipedia.org/wiki/' #default wiki_url 
+        if page == 'wiki':
+            
+            wiki_url = 'https://en.wikipedia.org/wiki/' #default wiki_url 
 
-        name_elements = self.name.strip().split()
-        for i,n in enumerate(name_elements):
-            if i < len(name_elements)-1:
-                wiki_url += n
-                wiki_url += '_'
-            else:
-                wiki_url += n
+            name_elements = self.name.strip().split()
+            for i,n in enumerate(name_elements):
+                if i < len(name_elements)-1:
+                    wiki_url += n
+                    wiki_url += '_'
+                else:
+                    wiki_url += n
 
-        film_urls = [wiki_url]
-        # create the other two options
-        opt_url_1 = wiki_url + '_(film)'
-        opt_url_2 = wiki_url + f'_({self.year_of_release}_film)'
-        film_urls.append(opt_url_1)
-        film_urls.append(opt_url_2)
-        
-        for film_url in film_urls:
-            web_page = urlopen(film_url)
-            html_bytes = web_page.read()
-            html = html_bytes.decode('utf-8')
-            if 'film' in html:
-                #if self._film_wiki_table is not None:
-                #    table = self._film_wiki_table
-                #else:
-                table = html.split('TemplateStyles:r1066479718')[-1].split('</table>')[0] #reads from the side table on wiki
-                
-                if string in table:
-                    result = table.split(string)[-1]
+            film_urls = [wiki_url]
+            # create the other two options
+            alt_url_1 = wiki_url + '_(film)'
+            alt_url_2 = wiki_url + '_({self.year_of_release}_film)'
+            film_urls.append(alt_url_1)
+            film_urls.append(alt_url_2)
+            
+            for film_url in film_urls:
+                web_page = urlopen(f'{film_url}')
+                html_bytes = web_page.read()
+                html = html_bytes.decode('utf-8')
+                if 'film' in html:
+                    table = html.split('TemplateStyles:r1066479718')[-1].split('</table>')[0] #reads from the side table on wiki
+                    
+                    if string in table:
+                        result = table.split(string)[-1]
+                        self._film_url = film_url
+                        break
+                    else:
+                        continue
+       
+        elif page == 'rotten':
+
+            rotten_url = 'https://www.rottentomatoes.com/m/'
+
+            name_elements = self.name.strip().split()
+            for i,n in enumerate(name_elements):
+                if i < len(name_elements)-1:
+                    rotten_url += n.lower()
+                    rotten_url += '_'
+                else:
+                    rotten_url += n.lower()
+
+            film_urls = [rotten_url]
+            alt_url = rotten_url + '_{self.year_of_release}'
+            film_urls.append(alt_url)
+            for film_url in film_urls:
+                web_page = urlopen(f'{film_url}')
+                html_bytes = web_page.read()
+                html = html_bytes.decode('utf-8')
+                if 'Movie Info' in html:
+                    movie_info = html.split('Movie Info')[-1].split('</section>')[0] 
+
+                    result = movie_info.split(string)[-1].split('</span>')[0]
                     self._film_url = film_url
-                    self._film_wiki_table = table
                     break
                 else:
                     continue
-                
-        return result
 
-        '''
-        list of the three options of URL
-        cycle through them until you find the sought for `string`
-        save `table` so we don't have to go through all of this again with each call of this method 
-        '''
-        
-        
-        """
-        page = urlopen(film_url)
-        html_bytes = page.read()
-        html = html_bytes.decode("utf-8")
-        if string in html:
-            table = html.split('TemplateStyles:r1066479718')[-1].split('</table>')[0] #reads from the side table on wiki
-            result = table.split(string)[-1]
+        # other options for other kind of web searches
         else:
-            film_url = wiki_url + '_(film)'
-            page = urlopen(film_url)
-            html_bytes = page.read()
-            html = html_bytes.decode("utf-8")
-            if string in html:
-                result = html.split(string)[-1].split('</table>')[0]
-            else:
-                try:
-                    film_url = wiki_url + f'_({self.year_of_release}_film)'
-                    page = urlopen(film_url)
-                    html_bytes = page.read()
-                    html = html_bytes.decode("utf-8")
-                    result = html.split(string)[-1].split('</table>')[0]
-                except:
-                    print('You need to input the year the film was made')
-                    #ask the user for the year if needed!
+            pass
 
-        self._film_url = film_url
         return result
-        """
+
         #https://www.w3schools.com/tags/ref_urlencode.ASP
         #SOMETIMES (!!!) special character are URL encoded
         #https://www.imdb.com/list/ls098136839/
