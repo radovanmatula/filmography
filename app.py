@@ -8,13 +8,14 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
+from kivy.uix.popup import Popup
 
 ###
 from kivy.config import Config
   
 Config.set('graphics', 'width', '350')
 Config.set('graphics', 'height', '130')
-Config.write()
+#Config.write()
 
 #FG imports
 from watchlist import Watchlist
@@ -67,7 +68,26 @@ class WatchlistEntry(GridLayout):
     # Temp function
     def kview_watchlist(self, instance):
 
-        self.SMWatchlist.view_watchlist()
+        film_name = self.entry.text
+        director = self.director.text
+        text = 'Film: ' + film_name + ', directed by: ' + director
+
+        layout = GridLayout(cols = 1, padding = 10)
+
+        popupText = Label(text = text)
+        closeButton = Button(text = "Close")
+
+        layout.add_widget(popupText)
+        layout.add_widget(closeButton)
+
+        # Instantiate the modal popup and display
+        popup = Popup(title ='New Film',
+                      content = layout)
+        popup.open()
+
+        # Attach close button press with popup.dismiss action
+        closeButton.bind(on_press = popup.dismiss)
+
     
     
 
