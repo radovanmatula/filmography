@@ -131,13 +131,16 @@ class Watchlist:
         #return resorted_watchlist
         self._watchlist_dictionary = resorted_watchlist
 
-    #temp function to create a primitive 'UI'
+    # Prepare text which will be printed in the app
     def view_watchlist(self):
         
-        for key, value in self._watchlist_dictionary.items():
-            print(f'{key}: {value}')
-            print('\n')
+        watchlist_text = f"{'Film' : <20}{'Director' : ^30}{'Runtime' : ^20}\n"
+        watchlist_text += '_______________________________________________________________\n'
 
+        for key, value in self._watchlist_dictionary.items():
+            watchlist_text += f"{key : <20}{value['director'] : ^30}{value['runtime'] : ^20}\n"
+
+        return watchlist_text
 
 
     # in case I need to delete the `.pkl` file print list of entries it contains 
