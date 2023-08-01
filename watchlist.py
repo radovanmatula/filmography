@@ -134,11 +134,11 @@ class Watchlist:
     # Prepare text which will be printed in the app
     def view_watchlist(self):
         
-        watchlist_text = f"{'Film' : <20}{'Director' : ^30}{'Runtime' : ^20}\n"
-        watchlist_text += '_______________________________________________________________\n'
+        watchlist_text = f"{'Film' : <40}{'Director' : ^35}{'Runtime (min)' : >40}\n"
+        watchlist_text += '__________________________________________________________________________\n'
 
         for key, value in self._watchlist_dictionary.items():
-            watchlist_text += f"{key : <20}{value['director'] : ^30}{value['runtime'] : ^20}\n"
+            watchlist_text += f"{key : <40}{value['director'] : ^20}{value['runtime'] : >40}\n"
 
         return watchlist_text
 

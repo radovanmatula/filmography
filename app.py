@@ -12,10 +12,10 @@ from kivy.uix.popup import Popup
 
 ###
 from kivy.config import Config
-  
-Config.set('graphics', 'width', '350')
-Config.set('graphics', 'height', '130')
-#Config.write()
+Config.set('graphics', 'resizable', True) 
+#Config.set('graphics', 'width', '350')
+#Config.set('graphics', 'height', '130')
+Config.write()
 
 #FG imports
 from watchlist import Watchlist
@@ -38,7 +38,7 @@ class WatchlistEntry(GridLayout):
         self.inner = GridLayout(cols=2) # the app layout will be split into two columns
         self.add_widget(self.inner)
         
-        self.knew_film = TextInput(multiline=True)
+        self.knew_film = TextInput(multiline=True, font_size=30)
         self.inner.add_widget(self.knew_film)
 
         self.add_button = Button(text='Add Film')
@@ -63,26 +63,49 @@ class WatchlistEntry(GridLayout):
     def krandom_film_suggestion(self, instance):
         
         random_pick = self.SMWatchlist.random_film_suggestion()
-        print(random_pick)
-
-    # Temp function
-    def kview_watchlist(self, instance):
-
-        film_name = self.entry.text
-        director = self.director.text
-        text = 'Film: ' + film_name + ', directed by: ' + director
-
+        
         layout = GridLayout(cols = 1, padding = 10)
 
-        popupText = Label(text = text)
+        popupText = Label(text = random_pick)
         closeButton = Button(text = "Close")
 
         layout.add_widget(popupText)
         layout.add_widget(closeButton)
 
         # Instantiate the modal popup and display
-        popup = Popup(title ='New Film',
-                      content = layout)
+        popup = Popup(
+                title ='Random Film Suggestion',
+                content = layout,
+                size=(200,100)
+                )
+        popup.open()
+
+        # Attach close button press with popup.dismiss action
+        closeButton.bind(on_press = popup.dismiss)
+
+    # Temp function
+    def kview_watchlist(self, instance):
+
+        Config.set('graphics', 'width', '750')
+        Config.set('graphics', 'height', '300')
+        Config.write()
+
+        text = self.SMWatchlist.view_watchlist()
+        
+        layout = GridLayout(cols = 1, padding = 10)
+
+        popupText = Label(text = text)
+        closeButton = Button(text = "Close", size=(700,100))
+
+        layout.add_widget(popupText)
+        layout.add_widget(closeButton)
+
+        # Instantiate the modal popup and display
+        popup = Popup(
+                title ='Your Watchlist',
+                content = layout,
+                size=(700,700)
+                )
         popup.open()
 
         # Attach close button press with popup.dismiss action
