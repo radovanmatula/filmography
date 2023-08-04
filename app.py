@@ -65,7 +65,13 @@ class MainScreen(Screen):
     def krandom_film_suggestion(self, instance):
 
         random_pick = self.SMWatchlist.random_film_suggestion()
-        random_popup = RandomSuggestionPopup(title = 'Random Film Suggestion', content=Label(text=random_pick, font_size=30))
+        random_popup = DismissPopup(
+                title = 'Random Film Suggestion', 
+                content=Label(text=random_pick, 
+                              font_size=20),
+                size_hint = (0.6, 0.4),
+                pos_hint = {'center_x': 0.5, 'center_y': 0.5}
+                )
         random_popup.open()
 
     
@@ -107,17 +113,17 @@ class WatchlistScreen(Screen):
 
 
 # Random Suggestion
-class RandomSuggestionPopup(Popup):
+class DismissPopup(Popup):
 
     def __init__(self, **kwargs):
-        super(RandomSuggestionPopup, self).__init__(**kwargs)
+        super(DismissPopup, self).__init__(**kwargs)
 
         self.auto_dismiss = False
         self.dismiss_after = 3  # seconds until the popup disappears
-        Clock.schedule_once(self.dismiss_random_popup, self.dismiss_after)
+        Clock.schedule_once(self.dismiss_popup, self.dismiss_after)
 
 
-    def dismiss_random_popup(self, dt):
+    def dismiss_popup(self, dt):
         self.dismiss()
 
 
