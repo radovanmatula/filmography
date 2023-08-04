@@ -137,8 +137,9 @@ class Watchlist:
         watchlist_text = f"{'Film' : <40}{'Director' : ^35}{'Runtime (min)' : >40}\n"
         watchlist_text += '__________________________________________________________________________\n'
 
-        for key, value in self._watchlist_dictionary.items():
-            watchlist_text += f"{key : <40}{value['director'] : ^20}{value['runtime'] : >40}\n"
+        for film, value in self._watchlist_dictionary.items():
+            if value['watch_status'] == 'N':
+                watchlist_text += f"{film : <40}{value['director'] : ^20}{value['runtime'] : >40}\n"
 
         return watchlist_text
 

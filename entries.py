@@ -34,26 +34,40 @@ class Film:
     
     def _get_year_of_release(self):
 
-        web_search = self.search_the_web(string='Release Date (Theaters):')
-        year_of_release = web_search.split(', ')[-1].split('</time>')[0] 
+        try:
+            web_search = self.search_the_web(string='Release Date (Theaters):', page='rotten')
+            year_of_release = web_search.split(', ')[-1].split('</time>')[0] 
+        except:
+            web_search = self.search_the_web(string='Release dates', page='wiki')
+            year_of_release = web_search.split('<span class="bday dtstart published updated">')[1].split('-')[0]
 
         return int(year_of_release) #int
 
+
     def _get_runtime(self):
         
-        web_search = self.search_the_web(string='Runtime:')
-        t = web_search.split('datetime=')[-1].split('>')[0].strip('""')
-        h = t.split('P')[1].strip()[0]
-        m = t.split('h ')[1].split('mM')[0]
-        runtime = 60*int(h) + int(m) #in minutes
+        try:
+            web_search = self.search_the_web(string='Runtime:', page='rotten')
+            t = web_search.split('datetime=')[-1].split('>')[0].strip('""')
+            h = t.split('P')[1].strip()[0]
+            m = t.split('h ')[1].split('mM')[0]
+            runtime = 60*int(h) + int(m) #in minutes
+        except:
+            web_search = self.search_the_web(string='Running time', page='wiki')
+            runtime = int(web_search.split(' minutes')[0].split('>')[-1])
 
         return runtime #int
 
+
     def _get_director(self):
-        
-        web_search = self.search_the_web(string='Director:')
-        director = web_search.split('"movie-info-director">')[-1].split('</a>')[0]
+
+        try:
+            web_search = self.search_the_web(string='Director:', page='rotten')
+            director = web_search.split('"movie-info-director">')[-1].split('</a>')[0]
         # add option of several directors
+        except:
+            web_search = self.search_the_web(string='Directed by', page='wiki')
+            director = web_search.split('title=')[1].split('>')[0].strip('""')
 
         return director
 
@@ -76,7 +90,7 @@ class Film:
             film_urls = [wiki_url]
             # create the other two options
             alt_url_1 = wiki_url + '_(film)'
-            alt_url_2 = wiki_url + '_({self.year_of_release}_film)'
+            alt_url_2 = wiki_url + f'_({self.year_of_release}_film)'
             film_urls.append(alt_url_1)
             film_urls.append(alt_url_2)
             
@@ -89,7 +103,6 @@ class Film:
                     
                     if string in table:
                         result = table.split(string)[-1]
-                        self._film_url = film_url
                         break
                     else:
                         continue
@@ -117,7 +130,6 @@ class Film:
                     movie_info = html.split('Movie Info')[-1].split('</section>')[0] 
 
                     result = movie_info.split(string)[-1].split('</span>')[0]
-                    self._film_url = film_url
                     break
                 else:
                     continue
