@@ -38,7 +38,7 @@ class Watchlist:
         self._watchlist_dictionary[new_film.name] = new_film.__dict__
         self._watchlist_dictionary[new_film.name]['rating'] = 'NR'
         self._watchlist_dictionary[new_film.name]['watch_status'] = 'N'
-        self._watchlist_dictionary[new_film.name]['date_added'] = datetime.today().strftime('%Y-%m-%d')
+        self._watchlist_dictionary[new_film.name]['date_added'] = datetime.today()
 
     def add_to_watchlist(self, names):
 
@@ -78,22 +78,45 @@ class Watchlist:
             pickle.dump(self._watchlist_dictionary, d, protocol=pickle.HIGHEST_PROTOCOL)
         
 
-    def random_film_suggestion(self, t_min=0, t_max=None, multiple=False, number_of_suggestions=3):
-      
+    def random_film_suggestion(self, t_min=0, t_max=None, bias=True, multiple=False, number_of_suggestions=3):
+     
+        """
         #add kwargs
+        if bias: 
+            if t_max is not None:
+                eligible_films = []
+                for key, value in self._watchlist_dictionary.items():
+                    if t_min < value['runtime'] < t_max:
+                        eligible_films.append(key)
+            else:
+                eligible_films = list(self._watchlist_dictionary.keys())
+            
+            if not multiple:
+                random_film_suggestion = random.choice(eligible_films)
+            else:
+                random_film_suggestion = random.sample(list(self._watchlist_dictionary.keys()), number_of_suggestions)
         
-        if t_max is not None:
-            eligible_films = []
+        else:
+            pass
+        """
+        if bias:
+            
+            films = []
+            weights = []
             for key, value in self._watchlist_dictionary.items():
-                if t_min < value['runtime'] < t_max:
-                    eligible_films.append(key)
-        else:
-            eligible_films = list(self._watchlist_dictionary.keys())
-
-        if not multiple:
-            random_film_suggestion = random.choice(eligible_films)
-        else:
-            random_film_suggestion = random.sample(list(self._watchlist_dictionary.keys()), number_of_suggestions)
+                if value['watch_status'] == 'N':
+                    films.append(key)
+                    since_added = datetime.today() - value['date_added']
+                    if 0 < since_added.days < 30:
+                        weights.append(1)
+                    elif 30 < since_added.days < 180:
+                        weights.append(2)
+                    elif 180 < since_added.days < 365:
+                        weights.append(5)
+                    else:
+                        weights.append(10)
+            
+            random_film_suggestion = random.choices(films, weights=weights, k=1)
 
         return random_film_suggestion
 
