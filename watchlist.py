@@ -142,7 +142,10 @@ class Watchlist:
 
             elif by == 'runtime':
                 resorted_watchlist = dict(sorted(self._watchlist_dictionary.items(), key=lambda item: item[1][by], reverse=reverse))
-            
+
+            elif by == 'date_added':
+                resorted_watchlist = dict(sorted(self._watchlist_dictionary.items(), key=lambda item: item[1][by], reverse=reverse))
+
             else:
                 print(f'{by} is not included in the watchlist.')
 
