@@ -31,7 +31,9 @@ class Film:
 
         self.runtime = self._get_runtime()
         self.director = self._get_director()
-    
+        self.rating = self._get_rating()
+
+
     def _get_year_of_release(self):
 
         try:
@@ -70,6 +72,24 @@ class Film:
             director = web_search.split('title=')[1].split('>')[0].strip('""')
 
         return director
+
+
+    def _get_rating(self):
+
+        accepted_ratings = ['G', 'PG', 'PG-13', 'R', 'NC-17']
+        
+        try:
+            web_search = self.search_the_web(string='Rating:', page='rotten')
+            possible_rating = web_search.split('item-value">')[1].split()[0]
+            if possible_rating in accepted_ratings:
+                rating = possible_rating
+            else:
+                rating = 'NR'
+        # If RottenTomatoes don't have the rating we will for now assume the film `Not Rated`
+        except:
+            rating = 'NR'
+            
+        return rating
 
 ###
 
