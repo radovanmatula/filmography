@@ -36,9 +36,9 @@ class Watchlist:
 
         new_film = Film(name)
         self._watchlist_dictionary[new_film.name] = new_film.__dict__
-        self._watchlist_dictionary[new_film.name]['rating'] = 'NR'
         self._watchlist_dictionary[new_film.name]['watch_status'] = 'N'
         self._watchlist_dictionary[new_film.name]['date_added'] = datetime.today()
+
 
     def add_to_watchlist(self, names):
 
@@ -49,20 +49,39 @@ class Watchlist:
                 if name not in films_already_in_watchlist:
                     self._add_film(name)
                     films_already_in_watchlist.append(name)
+                    print(f'{names} added to your watchlist')
                 else:
                     print(f'{name} is already in your watchlist, maybe you should finally watch it.')
         else:
             name = names
             if name not in films_already_in_watchlist:
                 self._add_film(name)
+                print(f'{names} added to your watchlist')
             else:
                 print(f'{name} is already in your watchlist, maybe you should finally watch it.')
 
         with open(self._dictionary_path, 'wb') as d:
             pickle.dump(self._watchlist_dictionary, d, protocol=pickle.HIGHEST_PROTOCOL)
      
-        print(f'{names} added to your watchlist')
      
+
+    # If SM finds an incorrect film you can reload that film (input the `year_of_release`)
+    def reinit_film(self, name, year_of_release=None):
+
+        # Load the old version of the film
+        current_entry = self._watchlist_dictionary[name]
+        # Delete it from the dictionary
+        self._watchlist_dictionary.pop(name)
+       
+        # Create new entry
+        renew_film = Film(name, year_of_release, avoid_url=current_entry['_film_url'])
+        self._watchlist_dictionary[renew_film.name] = renew_film.__dict__
+        self._watchlist_dictionary[renew_film.name]['watch_status'] = current_entry['watch_status']
+        self._watchlist_dictionary[renew_film.name]['date_added'] = datetime.today()
+        
+        with open(self._dictionary_path, 'wb') as d:
+            pickle.dump(self._watchlist_dictionary, d, protocol=pickle.HIGHEST_PROTOCOL)
+        
 
     def watched_film(self, name):
 
@@ -70,6 +89,7 @@ class Watchlist:
 
         with open(self._dictionary_path, 'wb') as d:
             pickle.dump(self._watchlist_dictionary, d, protocol=pickle.HIGHEST_PROTOCOL)
+
 
     def remove_from_watchlist(self, name):
         
@@ -79,6 +99,7 @@ class Watchlist:
             pickle.dump(self._watchlist_dictionary, d, protocol=pickle.HIGHEST_PROTOCOL)
         
 
+    # separate method for the random suggestions with conditions
     def random_film_suggestion(self, t_min=0, t_max=None, bias=True, multiple=False, number_of_suggestions=3):
      
         """

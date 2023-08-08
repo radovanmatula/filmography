@@ -9,20 +9,32 @@ import re
 
 class Film:
 
-    def __init__(self, name=None, year_of_release=None):
+    def __init__(self, name=None, year_of_release=None, avoid_url=None):
 
         if name is not None:
             self.name = name
         else:
             self.name = 'Frances Ha'
+      
+        # Keep `film_url` in case of future need
+        self._film_url = ''
+        # In case of `reinit_film`
+        if avoid_url is not None:
+            self._avoid_url = avoid_url
+        else:
+            self._avoid_url = None
 
+        # If the `year_of_release` is at given at the start or asked for as an input then the code will HAVE TO use only urls containing the year to ensure the film specified by the year is found
+        self._year_given = False
         if year_of_release is not None:
+            self._year_given = True
             self.year_of_release = int(year_of_release)
         else:
             year_format = r'^19\d{2}$|^20\d{2}$'
             try:
                 self.year_of_release = self._get_year_of_release()
             except:
+                self._year_given = False
                 year_input = input(f"Input the year of release of {self.name}: " )
                 if re.match(year_format, year_input):
                     self.year_of_release = int(year_input)
@@ -37,10 +49,10 @@ class Film:
     def _get_year_of_release(self):
 
         try:
-            web_search = self.search_the_web(string='Release Date (Theaters):', page='rotten')
-            year_of_release = web_search.split(', ')[-1].split('</time>')[0] 
+            web_search = self.search_the_web(string='"cag[release]":', page='rotten', movie_info='window.mpscall', not_year=False)
+            year_of_release = web_search.split(',')[0].strip('""') 
         except:
-            web_search = self.search_the_web(string='Release dates', page='wiki')
+            web_search = self.search_the_web(string='Release dates', page='wiki', not_year=False)
             year_of_release = web_search.split('<span class="bday dtstart published updated">')[1].split('-')[0]
 
         return int(year_of_release) #int
@@ -93,7 +105,7 @@ class Film:
 
 ###
 
-    def search_the_web(self, string, page='rotten'):
+    def search_the_web(self, string, page='rotten', movie_info='Movie Info', not_year=True):
 
         if page == 'wiki':
             
@@ -110,23 +122,39 @@ class Film:
             film_urls = [wiki_url]
             # create the other two options
             alt_url_1 = wiki_url + '_(film)'
-            alt_url_2 = wiki_url + f'_({self.year_of_release}_film)'
-            film_urls.append(alt_url_1)
-            film_urls.append(alt_url_2)
+            if not_year:
+                alt_url_2 = wiki_url + f'_({self.year_of_release}_film)'
+                film_urls.append(alt_url_1)
+                film_urls.append(alt_url_2)
+            else:
+                film_urls.append(alt_url_1)
             
+            if self._year_given:
+                film_urls = list(filter(lambda item: str(self.year_of_release) in item, film_urls))
+            else:
+                pass
+
+            # In case of `reinit_film`
+            if self._avoid_url is not None:
+                film_urls = list(filter(lambda item: item != self._avoid_url, film_urls))
+            else:
+                pass
+
             for film_url in film_urls:
-                web_page = urlopen(f'{film_url}')
+                web_page = urlopen(film_url)
                 html_bytes = web_page.read()
                 html = html_bytes.decode('utf-8')
                 if 'film' in html:
                     table = html.split('TemplateStyles:r1066479718')[-1].split('</table>')[0] #reads from the side table on wiki
-                    
+                    # double-check if the release year found on the used page matches 
                     if string in table:
                         result = table.split(string)[-1]
                         break
                     else:
                         continue
-       
+            
+            self._film_url = film_url
+
         elif page == 'rotten':
 
             rotten_url = 'https://www.rottentomatoes.com/m/'
@@ -139,20 +167,38 @@ class Film:
                 else:
                     rotten_url += n.lower()
 
-            film_urls = [rotten_url]
-            alt_url = rotten_url + '_{self.year_of_release}'
-            film_urls.append(alt_url)
+            film_urls = []
+            if not_year:
+                film_urls.append(rotten_url)
+                alt_url = rotten_url + f'_{self.year_of_release}'
+                film_urls.append(alt_url)
+            else:
+                film_urls.append(rotten_url)
+
+            if self._year_given:
+                film_urls = list(filter(lambda item: str(self.year_of_release) in item, film_urls))
+            else:
+                pass
+
+            # In case of `reinit_film`
+            if self._avoid_url is not None:
+                film_urls = list(filter(lambda item: item != self._avoid_url, film_urls))
+            else:
+                pass
+
             for film_url in film_urls:
-                web_page = urlopen(f'{film_url}')
+                web_page = urlopen(film_url)
                 html_bytes = web_page.read()
                 html = html_bytes.decode('utf-8')
                 if 'Movie Info' in html:
-                    movie_info = html.split('Movie Info')[-1].split('</section>')[0] 
+                    movie_info = html.split(movie_info)[-1].split('</section>')[0] 
 
                     result = movie_info.split(string)[-1].split('</span>')[0]
                     break
                 else:
                     continue
+        
+            self._film_url = film_url
 
         # other options for other kind of web searches
         else:
