@@ -63,6 +63,7 @@ class Watchlist:
      
         print(f'{names} added to your watchlist')
      
+
     def watched_film(self, name):
 
         self._watchlist_dictionary[name]['watch_status'] = 'W'
