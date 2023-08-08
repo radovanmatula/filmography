@@ -61,7 +61,7 @@ class Watchlist:
         with open(self._dictionary_path, 'wb') as d:
             pickle.dump(self._watchlist_dictionary, d, protocol=pickle.HIGHEST_PROTOCOL)
      
-        print(f'{names} added to your watchlist')   
+        print(f'{names} added to your watchlist')
      
     def watched_film(self, name):
 
